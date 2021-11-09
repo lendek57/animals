@@ -1,19 +1,20 @@
 package simulation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class WorldMap extends AbstractWorldMap {
-    private static final int ANIMALS_NUM = 10, PLANTS_NUM = 100;
+    private static final int ANIMALS_NUM = 20, PLANTS_NUM = 200;
     private final List<Animal> animals = new ArrayList<>();
-    private final List<Plant> plants = new ArrayList<>();
+    private final Map<Vector2D, List<Animal>> animalsPositions = new HashMap<>();
+    private final Map<Vector2D, Plant> plants = new HashMap<>();
     private final Random random = new Random();
 
     public WorldMap(int width, int height) {
         super(width, height);
         for (int i = 0; i < ANIMALS_NUM; i++) {
-            animals.add(new Animal(getRandomVector()));
+            Animal animal = new Animal(getRandomVector());
+            animals.add(animal);
+            placeAnimalOnMap(animal);
         }
         for (int i = 0; i < PLANTS_NUM; i++) {
             addNewPlant();
@@ -21,27 +22,36 @@ public class WorldMap extends AbstractWorldMap {
     }
 
     private Plant getPlantAtPosition(Vector2D position) {
-        for (Plant plant : plants) {
-            if (plant.getPosition().equals(position)) return plant;
-        }
-        return null;
+        return plants.get(position);
     }
 
     @Override
     public void run() {
+        animalsPositions.clear();
         for (Animal animal : animals) {
             animal.move(MapDirection.values()[this.random.nextInt(MapDirection.values().length)]);
+            placeAnimalOnMap(animal);
         }
+    }
+
+    private void placeAnimalOnMap(Animal animal) {
+        List<Animal> animalsAtPosition = animalsPositions
+                .computeIfAbsent(animal.getPosition(), k -> new LinkedList<>());
+        animalsAtPosition.add(animal);
     }
 
     public void eat() {
         for (Animal animal : animals) {
-            Plant plant = getPlantAtPosition(animal.getPosition());
-            if (plant != null) {
-                this.plants.remove(plant);
-                System.out.println("Animal ate plant at position " + plant.getPosition());
-                addNewPlant();
-            }
+            eatPlantAtPosition(animal.getPosition());
+        }
+    }
+
+    private void eatPlantAtPosition(Vector2D position) {
+        Plant plant = getPlantAtPosition(position);
+        if (plant != null) {
+            this.plants.remove(plant.getPosition());
+            System.out.println("Animal ate plant at position " + plant.getPosition());
+            addNewPlant();
         }
     }
 
@@ -52,7 +62,7 @@ public class WorldMap extends AbstractWorldMap {
     private void addNewPlant() {
         Vector2D pos = getRandomVector();
         while (isOccupiedByPlant(pos)) pos = getRandomVector();
-        plants.add(new Plant(pos));
+        plants.put(pos, new Plant(pos));
     }
 
     private boolean isOccupiedByPlant(Vector2D position) {
