@@ -2,18 +2,41 @@ package simulation;
 
 public class Animal {
 	private Vector2D position;
+	private int energy;
+	private int age;
 
-	public Animal(Vector2D position) {
+	public Animal(Vector2D position, int energy) {
 		this.position = position;
+		this.energy = energy;
+		this.age = 1;
 	}
 
 	public Vector2D getPosition() {
 		return position;
 	}
 
+	public int getEnergy() {
+		return energy;
+	}
+
+	public Animal setEnergy(int newEnergy) {
+		energy = newEnergy;
+		return this;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public Animal aging() {
+		age++;
+		return this;
+	}
+
 	public void move(MapDirection direction) {
 		position = pbc(position.add(direction.getUnitVector()));
-		System.out.println("Animal moves " + direction + ": new position: " + position);
+		System.out.println("Animal moves " + direction + ": new position: " + position
+				+ ": energy level: " + energy + ": age: " + age);
 	}
 
 	private Vector2D pbc(Vector2D position) {

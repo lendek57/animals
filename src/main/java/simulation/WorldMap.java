@@ -4,6 +4,8 @@ import java.util.*;
 
 public class WorldMap extends AbstractWorldMap {
     private static final int ANIMALS_NUM = 20, PLANTS_NUM = 200;
+    private static final int INITIAL_ENERGY = 20;
+
     private final List<Animal> animals = new ArrayList<>();
     private final Map<Vector2D, List<Animal>> animalsPositions = new HashMap<>();
     private final Map<Vector2D, Plant> plants = new HashMap<>();
@@ -12,7 +14,7 @@ public class WorldMap extends AbstractWorldMap {
     public WorldMap(int width, int height) {
         super(width, height);
         for (int i = 0; i < ANIMALS_NUM; i++) {
-            Animal animal = new Animal(getRandomVector());
+            Animal animal = new Animal(getRandomVector(), INITIAL_ENERGY);
             animals.add(animal);
             placeAnimalOnMap(animal);
         }
@@ -35,9 +37,9 @@ public class WorldMap extends AbstractWorldMap {
     }
 
     private void placeAnimalOnMap(Animal animal) {
-        List<Animal> animalsAtPosition = animalsPositions
-                .computeIfAbsent(animal.getPosition(), k -> new LinkedList<>());
-        animalsAtPosition.add(animal);
+        animalsPositions
+                .computeIfAbsent(animal.getPosition(), k -> new LinkedList<>())
+                .add(animal);
     }
 
     public void eat() {
