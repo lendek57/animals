@@ -4,8 +4,11 @@ public class Animal {
 	private Vector2D position;
 	private int energy;
 	private int age;
+	private final int animalId;
+	private static int counter = 0;
 
 	public Animal(Vector2D position, int energy) {
+		this.animalId = counter++;
 		this.position = position;
 		this.energy = energy;
 		this.age = 1;
@@ -33,9 +36,13 @@ public class Animal {
 		return this;
 	}
 
+	public int getAnimalId() {
+		return animalId;
+	}
+
 	public void move(MapDirection direction) {
 		position = pbc(position.add(direction.getUnitVector()));
-		System.out.println("Animal moves " + direction + ": new position: " + position
+		System.out.println("Animal " + animalId + " moves " + direction + ": new position: " + position
 				+ ": energy level: " + energy + ": age: " + age);
 	}
 
@@ -48,5 +55,9 @@ public class Animal {
 		if (position.getY() >= height) return position.subtract(new Vector2D(0, height));
 
 		return position;
+	}
+
+	public int compareTo(Animal animal) {
+		return animal.getEnergy() == energy ? animalId - animal.getAnimalId() : energy - animal.getEnergy();
 	}
 }

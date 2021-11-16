@@ -5,4 +5,5 @@ public interface IWorldMap {
     int getHeight();
     void run();
     void eat();
+    void atTheEndOfDay();
 }
