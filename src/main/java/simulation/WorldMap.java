@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class WorldMap extends AbstractWorldMap {
-    private static final int ANIMALS_NUM = 1000, PLANTS_NUM = 200;
-    private static final int INITIAL_ENERGY = 20;
+    private static final int ANIMALS_NUM = 100, PLANTS_NUM = 200;
+    private static final int ANIMAL_ENERGY = 20;
     private static final int PLANT_ENERGY = 10;
 
     private int dayNumber = 1;
@@ -17,9 +17,7 @@ public class WorldMap extends AbstractWorldMap {
     public WorldMap(int width, int height) {
         super(width, height);
         for (int i = 0; i < ANIMALS_NUM; i++) {
-            Animal animal = new Animal(getRandomVector(), INITIAL_ENERGY);
-            animals.add(animal);
-            placeAnimalOnMap(animal);
+            addAnimal(new Animal(getRandomVector(), ANIMAL_ENERGY));
         }
         for (int i = 0; i < PLANTS_NUM; i++) {
             addNewPlant();
@@ -44,6 +42,11 @@ public class WorldMap extends AbstractWorldMap {
         animalsPositions
                 .computeIfAbsent(animal.getPosition(), k -> new LinkedList<>())
                 .add(animal);
+    }
+
+    private void addAnimal(Animal animal) {
+        animals.add(animal);
+        placeAnimalOnMap(animal);
     }
 
     public void eat() {
@@ -86,5 +89,24 @@ public class WorldMap extends AbstractWorldMap {
                 .filter(animal -> animal.getEnergy() > 0)
                 .collect(Collectors.toList());
         this.dayNumber++;
+    }
+
+    @Override
+    public void reproduce() {
+        List<Animal> children = new LinkedList<>();
+        animalsPositions.forEach((pos, animals) -> {
+            List<Animal> parents = animals.stream()
+                    .filter(a -> a.getEnergy() > ANIMAL_ENERGY / 2)
+                    .sorted(Collections.reverseOrder())
+                    .limit(2)
+                    .collect(Collectors.toList());
+            if (parents.size() == 2) {
+                Animal child = new Animal(parents.get(0), parents.get(1));
+                children.add(child);
+                System.out.println("Animals at position " + pos + " reproduced. " +
+                        "Animal " + child.getAnimalId() + " was born");
+            }
+        });
+        children.forEach(this::addAnimal);
     }
 }

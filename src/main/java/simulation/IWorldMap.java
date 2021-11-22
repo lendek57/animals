@@ -6,4 +6,5 @@ public interface IWorldMap {
     void run();
     void eat();
     void atTheEndOfDay();
+    void reproduce();
 }
