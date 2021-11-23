@@ -74,6 +74,10 @@ public class Animal implements Comparable<Animal> {
 				+ ": energy level: " + energy + ": age: " + age);
 	}
 
+	public void moveBasedOnGenome() {
+		move(genome.getRandomMove());
+	}
+
 	private Vector2D pbc(Vector2D position) {
 		int width = Simulation.getWorldMap().getWidth();
 		int height = Simulation.getWorldMap().getHeight();

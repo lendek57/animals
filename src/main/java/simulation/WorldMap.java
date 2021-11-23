@@ -4,22 +4,25 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class WorldMap extends AbstractWorldMap {
-    private static final int ANIMALS_NUM = 100, PLANTS_NUM = 200;
-    private static final int ANIMAL_ENERGY = 20;
-    private static final int PLANT_ENERGY = 10;
+    private final static String statsFile = "stats.json";
 
+    private final int animalEnergy;
+    private final int plantEnergy;
     private int dayNumber = 1;
+
     private List<Animal> animals = new ArrayList<>();
     private final Map<Vector2D, List<Animal>> animalsPositions = new HashMap<>();
     private final Map<Vector2D, Plant> plants = new HashMap<>();
     private final Random random = new Random();
 
-    public WorldMap(int width, int height) {
+    public WorldMap(int width, int height, int noOfAnimals, int noOfPlants, int animalEnergy, int plantEnergy) {
         super(width, height);
-        for (int i = 0; i < ANIMALS_NUM; i++) {
-            addAnimal(new Animal(getRandomVector(), ANIMAL_ENERGY));
+        this.animalEnergy = animalEnergy;
+        this.plantEnergy = plantEnergy;
+        for (int i = 0; i < noOfAnimals; i++) {
+            addAnimal(new Animal(getRandomVector(), animalEnergy));
         }
-        for (int i = 0; i < PLANTS_NUM; i++) {
+        for (int i = 0; i < noOfPlants; i++) {
             addNewPlant();
         }
     }
@@ -33,7 +36,7 @@ public class WorldMap extends AbstractWorldMap {
         System.out.println("Today is day number " + dayNumber);
         animalsPositions.clear();
         animals.forEach(animal -> {
-            animal.move(MapDirection.values()[this.random.nextInt(MapDirection.values().length)]);
+            animal.moveBasedOnGenome();
             placeAnimalOnMap(animal);
         });
     }
@@ -59,7 +62,7 @@ public class WorldMap extends AbstractWorldMap {
                     .stream()
                     .max(Animal::compareTo)
                     .ifPresent((animal -> {
-                        animal.setEnergy(animal.getEnergy() + PLANT_ENERGY);
+                        animal.setEnergy(animal.getEnergy() + plantEnergy);
                         plants.remove(animal.getPosition());
                         System.out.println("Animal " + animal.getAnimalId() + " ate plant at position " + animal.getPosition());
                         addNewPlant();
@@ -89,6 +92,7 @@ public class WorldMap extends AbstractWorldMap {
                 .filter(animal -> animal.getEnergy() > 0)
                 .collect(Collectors.toList());
         this.dayNumber++;
+        createStatistics();
     }
 
     @Override
@@ -96,7 +100,7 @@ public class WorldMap extends AbstractWorldMap {
         List<Animal> children = new LinkedList<>();
         animalsPositions.forEach((pos, animals) -> {
             List<Animal> parents = animals.stream()
-                    .filter(a -> a.getEnergy() > ANIMAL_ENERGY / 2)
+                    .filter(a -> a.getEnergy() > animalEnergy / 2)
                     .sorted(Collections.reverseOrder())
                     .limit(2)
                     .collect(Collectors.toList());
@@ -108,5 +112,18 @@ public class WorldMap extends AbstractWorldMap {
             }
         });
         children.forEach(this::addAnimal);
+    }
+
+    private void createStatistics() {
+        SimulationStatistics statistics = new SimulationStatistics(
+                animals.size(),
+                plants.size(),
+                animals.stream().mapToInt(Animal::getAge).average().orElse(0),
+                animals.stream().mapToInt(Animal::getNumberOfChildren).average().orElse(0),
+                animals.stream().mapToInt(Animal::getEnergy).average().orElse(0),
+                dayNumber
+        );
+        System.out.println(statistics);
+        JsonParser.dumpStatisticsToJsonFile(statsFile, statistics);
     }
 }

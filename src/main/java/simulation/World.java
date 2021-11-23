@@ -1,4 +1,5 @@
 package simulation;
+import com.google.gson.Gson;
 
 public class World {
     private static final int DAYS_NO = 10;

@@ -25,4 +25,8 @@ public class Genome {
     public List<MapDirection> get() {
         return genome;
     }
+
+    public MapDirection getRandomMove() {
+        return genome.get(random.nextInt(GENOME_LENGTH));
+    }
 }
