@@ -2,12 +2,14 @@ package simulation;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class WorldMap extends AbstractWorldMap {
     private final static String statsFile = "stats.json";
 
     private final int animalEnergy;
     private final int plantEnergy;
+    private final int noOfPlants;
     private int dayNumber = 1;
 
     private List<Animal> animals = new ArrayList<>();
@@ -19,6 +21,7 @@ public class WorldMap extends AbstractWorldMap {
         super(width, height);
         this.animalEnergy = animalEnergy;
         this.plantEnergy = plantEnergy;
+        this.noOfPlants = noOfPlants;
         for (int i = 0; i < noOfAnimals; i++) {
             addAnimal(new Animal(getRandomVector(), animalEnergy));
         }
@@ -54,6 +57,7 @@ public class WorldMap extends AbstractWorldMap {
 
     public void eat() {
         animalsPositions.forEach(this::eatPlantAtPosition);
+        IntStream.range(1, new Random().nextInt(noOfPlants / 10)).forEach(i -> addNewPlant());
     }
 
     private void eatPlantAtPosition(Vector2D position, List<Animal> animals) {
@@ -65,7 +69,6 @@ public class WorldMap extends AbstractWorldMap {
                         animal.setEnergy(animal.getEnergy() + plantEnergy);
                         plants.remove(animal.getPosition());
                         System.out.println("Animal " + animal.getAnimalId() + " ate plant at position " + animal.getPosition());
-                        addNewPlant();
                     }));
         }
     }
