@@ -117,6 +117,16 @@ public class WorldMap extends AbstractWorldMap {
         children.forEach(this::addAnimal);
     }
 
+    @Override
+    public Map<Vector2D, List<Animal>> getAnimalsPositions() {
+        return animalsPositions;
+    }
+
+    @Override
+    public Map<Vector2D, Plant> getPlantsPositions() {
+        return plants;
+    }
+
     private void createStatistics() {
         SimulationStatistics statistics = new SimulationStatistics(
                 animals.size(),
