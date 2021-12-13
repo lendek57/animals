@@ -1,5 +1,6 @@
 package gui;
 
+import simulation.JsonParser;
 import simulation.Simulation;
 import simulation.SimulationParams;
 
@@ -13,10 +14,6 @@ public class MainPanel extends JPanel implements ActionListener {
     private final Timer timer;
 
     private final GridBagConstraints constraints = new GridBagConstraints();
-    private final CustomButton startBtn;
-    private final CustomButton stopBtn;
-    private final CustomButton continueBtn;
-    private final CustomButton dumpToJsonBtn;
     private final CustomTextArea statsInput;
 
     private int nextRow = 0;
@@ -24,13 +21,18 @@ public class MainPanel extends JPanel implements ActionListener {
     private final static int DEFAULT_COL = 0;
     private final static int MAP_ROW = 0;
     private final static int MAP_COL = 2;
+    private final static String STATS_FILE = "stats.json";
 
     public MainPanel() {
         initLayout();
-        startBtn = createButton("Start new game");
-        stopBtn = createButton("Stop game");
-        continueBtn = createButton("Continue game");
-        dumpToJsonBtn = createButton("Dump to JSON");
+        CustomButton startBtn = createButton("Start new game");
+        startBtn.addActionListener((ActionEvent e) -> startApp());
+        CustomButton stopBtn = createButton("Stop game");
+        stopBtn.addActionListener((ActionEvent e) -> stopApp());
+        CustomButton continueBtn = createButton("Continue game");
+        continueBtn.addActionListener((ActionEvent e) -> continueApp());
+        CustomButton dumpToJsonBtn = createButton("Dump to JSON");
+        dumpToJsonBtn.addActionListener((ActionEvent e) -> dumpStatistics());
         SimulationParams.getParamsMap().forEach((fieldName, value) ->
                 new CustomTextField(fieldName, Integer.toString(value), nextRow++, DEFAULT_COL, constraints, this)
         );
@@ -47,7 +49,7 @@ public class MainPanel extends JPanel implements ActionListener {
         mapPanel = new MapPanel(Simulation.getWorldMap());
         addMapPanel();
         timer = new Timer(1000 / SimulationParams.getField("speed"), this);
-        timer.start();
+        startApp();
     }
 
     private void initLayout() {
@@ -90,5 +92,25 @@ public class MainPanel extends JPanel implements ActionListener {
         }
         Simulation.simulateDay();
         mapPanel.repaint();
+        statsInput.setText(Simulation.getWorldMap().getStatistics().toString());
+    }
+
+    private void startApp() {
+        if (timer.isRunning()) timer.stop();
+        Simulation.setSimulation();
+        mapPanel.repaint();
+        timer.start();
+    }
+
+    private void stopApp() {
+        if (timer.isRunning()) timer.stop();
+    }
+
+    private void continueApp() {
+        if (!timer.isRunning()) timer.start();
+    }
+
+    private void dumpStatistics() {
+        JsonParser.dumpStatisticsToJsonFile(STATS_FILE, Simulation.getWorldMap().getStatistics());
     }
 }

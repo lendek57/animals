@@ -1,12 +1,16 @@
 package gui;
 
+import simulation.SimulationParams;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
+import javax.swing.event.DocumentEvent;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.text.NumberFormat;
+import java.util.Objects;
 
 public class CustomTextField extends JFormattedTextField {
     private static final int DEFAULT_WIDTH = 1;
@@ -30,6 +34,7 @@ public class CustomTextField extends JFormattedTextField {
           JPanel panel
     ) {
         super(new DefaultFormatterFactory(formatter), Integer.valueOf(value));
+        initListener(fieldName);
 
         constraints.gridwidth = DEFAULT_WIDTH;
         constraints.gridy = row;
@@ -49,5 +54,14 @@ public class CustomTextField extends JFormattedTextField {
         constraints.gridx = col + 1;
         constraints.fill = GridBagConstraints.HORIZONTAL;
         panel.add(this, constraints);
+    }
+
+    private void initListener(String fieldName) {
+        getDocument().addDocumentListener((IDocumentListener) (DocumentEvent event) -> {
+            String value = getText();
+            if (value != null && !Objects.equals(value, "")) {
+                SimulationParams.setField(fieldName, Integer.parseInt(value));
+            }
+        });
     }
 }

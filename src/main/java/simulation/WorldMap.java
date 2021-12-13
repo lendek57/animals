@@ -5,24 +5,28 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class WorldMap extends AbstractWorldMap {
-    private final static String statsFile = "stats.json";
-
-    private final int animalEnergy;
-    private final int plantEnergy;
-    private final int noOfPlants;
+    private int animalEnergy = 0;
+    private int plantEnergy = 0;
+    private int noOfPlants = 0;
     private int dayNumber = 1;
 
     private List<Animal> animals = new ArrayList<>();
     private final Map<Vector2D, List<Animal>> animalsPositions = new HashMap<>();
     private final Map<Vector2D, Plant> plants = new HashMap<>();
     private final Random random = new Random();
+    private SimulationStatistics statistics = null;
 
-    public WorldMap(int width, int height, int noOfAnimals, int noOfPlants, int animalEnergy, int plantEnergy) {
-        super(width, height);
-        this.animalEnergy = animalEnergy;
-        this.plantEnergy = plantEnergy;
-        this.noOfPlants = noOfPlants;
-        for (int i = 0; i < noOfAnimals; i++) {
+    public WorldMap() {
+        super(SimulationParams.getField("width"), SimulationParams.getField("height"));
+    }
+
+    public void setSimulation() {
+        this.animalEnergy = SimulationParams.getField("animalEnergy");
+        this.plantEnergy = SimulationParams.getField("plantEnergy");
+        this.noOfPlants = Math.min(SimulationParams.getField("noOfPlants"), getHeight() * getWidth());
+        animals.clear();
+        plants.clear();
+        for (int i = 0; i < SimulationParams.getField("noOfAnimals"); i++) {
             addAnimal(new Animal(getRandomVector(), animalEnergy));
         }
         for (int i = 0; i < noOfPlants; i++) {
@@ -57,7 +61,9 @@ public class WorldMap extends AbstractWorldMap {
 
     public void eat() {
         animalsPositions.forEach(this::eatPlantAtPosition);
-        IntStream.range(1, new Random().nextInt(noOfPlants / 10)).forEach(i -> addNewPlant());
+        IntStream.range(1, new Random().nextInt(noOfPlants / 10)).forEach(i -> {
+            if (plants.size() < getWidth() * getHeight()) addNewPlant();
+        });
     }
 
     private void eatPlantAtPosition(Vector2D position, List<Animal> animals) {
@@ -128,7 +134,7 @@ public class WorldMap extends AbstractWorldMap {
     }
 
     private void createStatistics() {
-        SimulationStatistics statistics = new SimulationStatistics(
+        statistics = new SimulationStatistics(
                 animals.size(),
                 plants.size(),
                 animals.stream().mapToInt(Animal::getAge).average().orElse(0),
@@ -136,7 +142,9 @@ public class WorldMap extends AbstractWorldMap {
                 animals.stream().mapToInt(Animal::getEnergy).average().orElse(0),
                 dayNumber
         );
-        System.out.println(statistics);
-        JsonParser.dumpStatisticsToJsonFile(statsFile, statistics);
+    }
+
+    public SimulationStatistics getStatistics() {
+        return statistics;
     }
 }

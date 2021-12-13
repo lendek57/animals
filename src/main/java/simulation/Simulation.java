@@ -1,18 +1,7 @@
 package simulation;
 
 public class Simulation {
-    private static final IWorldMap worldMap;
-
-    static {
-        worldMap = new WorldMap(
-                SimulationParams.getField("width"),
-                SimulationParams.getField("height"),
-                SimulationParams.getField("noOfAnimals"),
-                SimulationParams.getField("noOfPlants"),
-                SimulationParams.getField("animalEnergy"),
-                SimulationParams.getField("plantEnergy")
-        );
-    }
+    private static final IWorldMap worldMap = new WorldMap();
 
     public static IWorldMap getWorldMap() {
         return worldMap;
@@ -23,5 +12,9 @@ public class Simulation {
         worldMap.eat();
         worldMap.reproduce();
         worldMap.atTheEndOfDay();
+    }
+
+    public static void setSimulation() {
+        worldMap.setSimulation();
     }
 }
